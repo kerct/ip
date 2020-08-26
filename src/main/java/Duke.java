@@ -15,17 +15,18 @@ public class Duke {
         System.out.println(dottedLine);
 
         Scanner in = new Scanner(System.in);
-        String[] list = new String[100];
+        Task[] tasks = new Task[100];
         int numOfTasks = 0;
         String input = in.nextLine();
 
         while (!input.equalsIgnoreCase("bye")) {
             System.out.println(dottedLine);
             if (input.equals("list")) {
-                printList(list, numOfTasks);
+                printList(tasks, numOfTasks);
             }
             else {
-                list[numOfTasks] = input;
+                Task task = new Task(input);
+                tasks[numOfTasks] = task;
                 numOfTasks++;
                 System.out.println("\tadded: " + input);
             }
@@ -38,9 +39,10 @@ public class Duke {
         System.out.println(dottedLine);
     }
 
-    private static void printList(String[] list, int numOfTasks) {
+    private static void printList(Task[] tasks, int numOfTasks) {
         for (int i = 0; i < numOfTasks; i++) {
-            System.out.println("\t" + (i + 1) + ". " + list[i]);
+            Task task = tasks[i];
+            System.out.println("\t" + (i + 1) + ". [" + task.getStatusIcon() + "] " + task.getName());
         }
     }
 }
