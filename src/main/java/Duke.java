@@ -15,11 +15,20 @@ public class Duke {
         System.out.println(dottedLine);
 
         Scanner in = new Scanner(System.in);
+        String[] list = new String[100];
+        int numOfTasks = 0;
         String input = in.nextLine();
 
-        while(!input.equalsIgnoreCase("bye")) {
+        while (!input.equalsIgnoreCase("bye")) {
             System.out.println(dottedLine);
-            System.out.println("\t" + input);
+            if (input.equals("list")) {
+                printList(list, numOfTasks);
+            }
+            else {
+                list[numOfTasks] = input;
+                numOfTasks++;
+                System.out.println("\tadded: " + input);
+            }
             System.out.println(dottedLine);
             input = in.nextLine();
         }
@@ -27,5 +36,11 @@ public class Duke {
         System.out.println(dottedLine);
         System.out.println("\tBye. Hope to see you again soon!");
         System.out.println(dottedLine);
+    }
+
+    private static void printList(String[] list, int numOfTasks) {
+        for (int i = 0; i < numOfTasks; i++) {
+            System.out.println("\t" + (i + 1) + ". " + list[i]);
+        }
     }
 }
