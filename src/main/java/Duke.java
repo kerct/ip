@@ -21,8 +21,14 @@ public class Duke {
 
         while (!input.equalsIgnoreCase("bye")) {
             System.out.println(dottedLine);
-            if (input.equals("list")) {
+            if (input.equalsIgnoreCase("list")) {
                 printList(tasks, numOfTasks);
+            }
+            else if (input.startsWith("done")) {
+                int index = Integer.parseInt(input.substring(4).trim());
+                tasks[index - 1].markAsDone();
+                System.out.println("\tNice! I've marked this task as done: ");
+                System.out.println("\t" + getTaskWithStatus(tasks[index - 1]));
             }
             else {
                 Task task = new Task(input);
@@ -40,9 +46,14 @@ public class Duke {
     }
 
     private static void printList(Task[] tasks, int numOfTasks) {
+        System.out.println("\tHere are the tasks in your list:");
         for (int i = 0; i < numOfTasks; i++) {
             Task task = tasks[i];
-            System.out.println("\t" + (i + 1) + ". [" + task.getStatusIcon() + "] " + task.getName());
+            System.out.println("\t" + (i + 1) + ". " + getTaskWithStatus(task));
         }
+    }
+
+    private static String getTaskWithStatus(Task task) {
+        return "[" + task.getStatusIcon() + "] " + task.getName();
     }
 }
