@@ -30,20 +30,15 @@ public class Duke {
             System.out.println(DOTTED_LINE);
             if (input.equalsIgnoreCase(LIST_COMMAND)) {
                 handleInput(input, LIST_COMMAND);
-            }
-            else if (input.startsWith(DONE_COMMAND)) {
+            } else if (input.startsWith(DONE_COMMAND)) {
                 handleInput(input, DONE_COMMAND);
-            }
-            else if (input.startsWith(TODO_COMMAND)) {
+            } else if (input.startsWith(TODO_COMMAND)) {
                 handleInput(input, TODO_COMMAND);
-            }
-            else if (input.startsWith(DEADLINE_COMMAND)) {
+            } else if (input.startsWith(DEADLINE_COMMAND)) {
                 handleInput(input, DEADLINE_COMMAND);
-            }
-            else if (input.startsWith(EVENT_COMMAND)) {
+            } else if (input.startsWith(EVENT_COMMAND)) {
                 handleInput(input, EVENT_COMMAND);
-            }
-            else {
+            } else {
                 handleInput(input, "");
             }
             System.out.println(DOTTED_LINE);
@@ -62,7 +57,7 @@ public class Duke {
     }
 
     private static void handleInput(String input, String command) {
-        switch(command) {
+        switch (command) {
         case LIST_COMMAND: {
             printList();
             break;
