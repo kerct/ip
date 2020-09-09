@@ -6,7 +6,8 @@ public class Duke {
             + "| | | | | | | |/ / _ \\\n"
             + "| |_| | |_| |   <  __/\n"
             + "|____/ \\__,_|_|\\_\\___|\n";
-    private static final String DOTTED_LINE = "\t-----------------------------------------";
+    private static final String DOTTED_LINE =
+            "\t----------------------------------------------------------";
     private static final int MAX_TASKS = 100;
     private static final String EXIT_COMMAND = "bye";
     private static final String LIST_COMMAND = "list";
@@ -22,29 +23,8 @@ public class Duke {
 
     public static void main(String[] args) {
         printWelcomeMessage();
-
-        Scanner in = new Scanner(System.in);
-        String input = in.nextLine();
-
-        while (!input.equalsIgnoreCase(EXIT_COMMAND)) {
-            System.out.println(DOTTED_LINE);
-            if (input.equalsIgnoreCase(LIST_COMMAND)) {
-                handleInput(input, LIST_COMMAND);
-            } else if (input.startsWith(DONE_COMMAND)) {
-                handleInput(input, DONE_COMMAND);
-            } else if (input.startsWith(TODO_COMMAND)) {
-                handleInput(input, TODO_COMMAND);
-            } else if (input.startsWith(DEADLINE_COMMAND)) {
-                handleInput(input, DEADLINE_COMMAND);
-            } else if (input.startsWith(EVENT_COMMAND)) {
-                handleInput(input, EVENT_COMMAND);
-            } else {
-                handleInput(input, "");
-            }
-            System.out.println(DOTTED_LINE);
-            input = in.nextLine();
-        }
-
+        Scanner scanner = new Scanner(System.in);
+        handleInputs(scanner);
         printEndMessage();
     }
 
@@ -56,7 +36,33 @@ public class Duke {
         System.out.println(DOTTED_LINE);
     }
 
-    private static void handleInput(String input, String command) {
+    private static void handleInputs(Scanner scanner) {
+        String input = scanner.nextLine();
+        while (!input.equalsIgnoreCase(EXIT_COMMAND)) {
+            System.out.println(DOTTED_LINE);
+            try {
+                if (input.equalsIgnoreCase(LIST_COMMAND)) {
+                    executeCommand(input, LIST_COMMAND);
+                } else if (input.startsWith(DONE_COMMAND)) {
+                    executeCommand(input, DONE_COMMAND);
+                } else if (input.startsWith(TODO_COMMAND)) {
+                    executeCommand(input, TODO_COMMAND);
+                } else if (input.startsWith(DEADLINE_COMMAND)) {
+                    executeCommand(input, DEADLINE_COMMAND);
+                } else if (input.startsWith(EVENT_COMMAND)) {
+                    executeCommand(input, EVENT_COMMAND);
+                } else {
+                    System.out.println("\t☹ OOPS!!! I'm sorry, but I don't know what that means :(");
+                }
+            } catch (EmptyNameException e) {
+                System.out.println("\t☹ OOPS!!! The description of a todo cannot be empty.");
+            }
+            System.out.println(DOTTED_LINE);
+            input = scanner.nextLine();
+        }
+    }
+
+    private static void executeCommand(String input, String command) throws EmptyNameException {
         switch (command) {
         case LIST_COMMAND: {
             printList();
@@ -70,6 +76,9 @@ public class Duke {
         }
         case TODO_COMMAND: {
             String name = input.substring(TODO_COMMAND.length()).trim();
+            if(name.length() == 0) {
+                throw new EmptyNameException();
+            }
             Task todo = new Todo(name);
             addToTaskList(todo);
             break;
