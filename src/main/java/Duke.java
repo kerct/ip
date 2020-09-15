@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Duke {
@@ -8,7 +9,6 @@ public class Duke {
             + "|____/ \\__,_|_|\\_\\___|\n";
     private static final String DOTTED_LINE =
             "\t----------------------------------------------------------";
-    private static final int MAX_TASKS = 100;
     private static final String EXIT_COMMAND = "bye";
     private static final String LIST_COMMAND = "list";
     private static final String DONE_COMMAND = "done";
@@ -18,8 +18,7 @@ public class Duke {
     private static final String BY_COMMAND = "/by";
     private static final String AT_COMMAND = "/at";
 
-    private static final Task[] tasks = new Task[MAX_TASKS];
-    private static int numOfTasks = 0;
+    private static final ArrayList<Task> tasks = new ArrayList<>();
 
     public static void main(String[] args) {
         printWelcomeMessage();
@@ -70,7 +69,7 @@ public class Duke {
         }
         case DONE_COMMAND: {
             int index = Integer.parseInt(input.substring(command.length()).trim());
-            Task task = tasks[index - 1];
+            Task task = tasks.get(index - 1);
             markTaskAsDone(task);
             break;
         }
@@ -109,8 +108,9 @@ public class Duke {
 
     private static void printList() {
         System.out.println("\tHere are the tasks in your list:");
+        int numOfTasks = tasks.size();
         for (int i = 0; i < numOfTasks; i++) {
-            Task task = tasks[i];
+            Task task = tasks.get(i);
             System.out.println("\t" + (i + 1) + ". " + task.toString());
         }
     }
@@ -122,11 +122,10 @@ public class Duke {
     }
 
     private static void addToTaskList(Task task) {
-        tasks[numOfTasks] = task;
-        numOfTasks++;
+        tasks.add(task);
         System.out.println("\tGot it. I've added this task:");
         System.out.println("\t\t" + task.toString());
-        System.out.println("\tNow you have " + numOfTasks + " tasks in the list.");
+        System.out.println("\tNow you have " + tasks.size() + " tasks in the list.");
     }
 
     private static void printEndMessage() {
