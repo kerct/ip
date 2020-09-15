@@ -137,15 +137,23 @@ public class Duke {
         Task task = tasks.get(index);
         tasks.remove(index);
         System.out.println("\tNoted. I've removed this task: ");
-        System.out.println("\t\t" + task.toString());
-        System.out.println("\tNow you have " + tasks.size() + " tasks in the list.");
+        printTaskAndTotal(task);
     }
 
     private static void addToTaskList(Task task) {
         tasks.add(task);
         System.out.println("\tGot it. I've added this task:");
+        printTaskAndTotal(task);
+    }
+
+    private static void printTaskAndTotal(Task task) {
         System.out.println("\t\t" + task.toString());
-        System.out.println("\tNow you have " + tasks.size() + " tasks in the list.");
+        int total = tasks.size();
+        if(total == 1) {
+            System.out.println("\tNow you only have 1 task in the list!");
+        } else {
+            System.out.println("\tNow you have " + total + " tasks in the list.");
+        }
     }
 
     private static void printEndMessage() {
