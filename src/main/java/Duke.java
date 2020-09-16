@@ -1,4 +1,7 @@
 import java.util.ArrayList;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Scanner;
 
 public class Duke {
@@ -18,13 +21,15 @@ public class Duke {
     private static final String DONE_COMMAND = "done";
     private static final String DELETE_COMMAND = "delete";
     private static final String EXIT_COMMAND = "bye";
+    private static final String DIR = "data";
+    private static final String FILEPATH = DIR + File.separator + "duke.txt";
 
     private static final ArrayList<Task> tasks = new ArrayList<>();
 
     public static void main(String[] args) {
         printWelcomeMessage();
-        Scanner scanner = new Scanner(System.in);
-        handleInputs(scanner);
+        loadData();
+        readInputs();
         printEndMessage();
     }
 
@@ -36,35 +41,74 @@ public class Duke {
         System.out.println(DOTTED_LINE);
     }
 
-    private static void handleInputs(Scanner scanner) {
+    private static void loadData() {
+        try {
+            File directory = new File(DIR);
+            directory.mkdir();
+
+            File file = new File(FILEPATH);
+            // if file already exists, read it
+            if (!file.createNewFile()) {
+                Scanner reader = new Scanner(file);
+                while (reader.hasNext()) {
+                    handleInput(reader.nextLine(), false);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void readInputs() {
+        Scanner scanner = new Scanner(System.in);
         String input = scanner.nextLine();
         while (!input.equalsIgnoreCase(EXIT_COMMAND)) {
-            System.out.println(DOTTED_LINE);
-            try {
-                if (input.equalsIgnoreCase(LIST_COMMAND)) {
-                    executeCommand(input, LIST_COMMAND);
-                } else if (input.startsWith(DONE_COMMAND)) {
-                    executeCommand(input, DONE_COMMAND);
-                } else if (input.startsWith(DELETE_COMMAND)) {
-                    executeCommand(input, DELETE_COMMAND);
-                } else if (input.startsWith(TODO_COMMAND)) {
-                    executeCommand(input, TODO_COMMAND);
-                } else if (input.startsWith(DEADLINE_COMMAND)) {
-                    executeCommand(input, DEADLINE_COMMAND);
-                } else if (input.startsWith(EVENT_COMMAND)) {
-                    executeCommand(input, EVENT_COMMAND);
-                } else {
-                    System.out.println("\t☹ OOPS!!! I'm sorry, but I don't know what that means :(");
-                }
-            } catch (EmptyNameException e) {
-                System.out.println("\t☹ OOPS!!! The description of a todo cannot be empty.");
-            }
-            System.out.println(DOTTED_LINE);
+            handleInput(input, true);
             input = scanner.nextLine();
         }
     }
 
-    private static void executeCommand(String input, String command) throws EmptyNameException {
+    private static void addInputToFile(String input) throws IOException {
+        // create a FileWriter in append mode
+        FileWriter fw = new FileWriter(FILEPATH, true);
+        fw.write(input + System.lineSeparator());
+        fw.close();
+    }
+
+    private static void handleInput(String input, boolean finishSetup) {
+        if (finishSetup) {
+            System.out.println(DOTTED_LINE);
+        }
+        try {
+            if (input.trim().equalsIgnoreCase(LIST_COMMAND)) {
+                executeCommand(input, LIST_COMMAND, finishSetup);
+            } else if (input.startsWith(DONE_COMMAND)) {
+                executeCommand(input, DONE_COMMAND, finishSetup);
+            } else if (input.startsWith(TODO_COMMAND)) {
+                executeCommand(input, TODO_COMMAND, finishSetup);
+            } else if (input.startsWith(DEADLINE_COMMAND)) {
+                executeCommand(input, DEADLINE_COMMAND, finishSetup);
+            } else if (input.startsWith(EVENT_COMMAND)) {
+                executeCommand(input, EVENT_COMMAND, finishSetup);
+            } else {
+                System.out.println("\t☹ OOPS!!! I'm sorry, but I don't know what that means :(");
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("\tPlease enter the task number too!");
+        } catch (InvalidIndexException e) {
+            System.out.println("\t☹ OOPS!!! I can't find this task");
+        } catch (EmptyNameException e) {
+            System.out.println("\t☹ OOPS!!! The description of a todo cannot be empty.");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (finishSetup) {
+            System.out.println(DOTTED_LINE);
+        }
+    }
+
+    private static void executeCommand(String input, String command, boolean finishSetup)
+            throws InvalidIndexException, EmptyNameException, IOException {
         switch (command) {
         case LIST_COMMAND: {
             printList();
@@ -72,12 +116,18 @@ public class Duke {
         }
         case DONE_COMMAND: {
             int index = getIndexFromInput(input, command);
-            markTaskAsDone(index);
+            markTaskAsDone(index, finishSetup);
+            if (finishSetup) {
+                addInputToFile(input);
+            }
             break;
         }
         case DELETE_COMMAND: {
             int index = getIndexFromInput(input, command);
-            removeTask(index);
+            removeTask(index, finishSetup);
+            if (finishSetup) {
+                addInputToFile(input);
+            }
             break;
         }
         case TODO_COMMAND: {
@@ -86,28 +136,44 @@ public class Duke {
                 throw new EmptyNameException();
             }
             Task todo = new Todo(name);
-            addToTaskList(todo);
+            addToTaskList(todo, finishSetup);
+            if (finishSetup) {
+                addInputToFile(input);
+            }
             break;
         }
         case DEADLINE_COMMAND: {
             int byIndex = input.indexOf(BY_COMMAND);
+            if (byIndex == -1) {
+                System.out.println("Please tell me when this is due!");
+                return;
+            }
             String name = input.substring(DEADLINE_COMMAND.length(), byIndex).trim();
             String by = input.substring(byIndex + BY_COMMAND.length()).trim();
             Task deadline = new Deadline(name, by);
-            addToTaskList(deadline);
+            addToTaskList(deadline, finishSetup);
+            if (finishSetup) {
+                addInputToFile(input);
+            }
             break;
         }
         case EVENT_COMMAND: {
             int atIndex = input.indexOf(AT_COMMAND);
+            if (atIndex == -1) {
+                System.out.println("Please tell me when is this event!");
+                return;
+            }
             String name = input.substring(EVENT_COMMAND.length(), atIndex).trim();
             String at = input.substring(atIndex + AT_COMMAND.length()).trim();
             Task event = new Event(name, at);
-            addToTaskList(event);
+            addToTaskList(event, finishSetup);
+            if (finishSetup) {
+                addInputToFile(input);
+            }
             break;
         }
         default: {
-            Task task = new Task(input);
-            addToTaskList(task);
+            System.out.println("Something went wrong here...");
             break;
         }
         }
@@ -122,34 +188,45 @@ public class Duke {
         }
     }
 
-    private static int getIndexFromInput(String input, String command) {
-        return Integer.parseInt(input.substring(command.length()).trim()) - 1;
+    private static int getIndexFromInput(String input, String command)
+            throws NumberFormatException, InvalidIndexException {
+        int index = Integer.parseInt(input.substring(command.length()).trim()) - 1;
+        if (index < 1 || index > tasks.size()) {
+            throw new InvalidIndexException();
+        }
+        return index;
     }
 
-    private static void markTaskAsDone(int index) {
+    private static void markTaskAsDone(int index, boolean print) {
         Task task = tasks.get(index);
         task.markAsDone();
-        System.out.println("\tNice! I've marked this task as done: ");
-        System.out.println("\t" + task.toString());
+        if (print) {
+            System.out.println("\tNice! I've marked this task as done: ");
+            System.out.println("\t" + task.toString());
+        }
     }
 
-    private static void removeTask(int index) {
+    private static void removeTask(int index, boolean print) {
         Task task = tasks.get(index);
         tasks.remove(index);
-        System.out.println("\tNoted. I've removed this task: ");
-        printTaskAndTotal(task);
+        if (print) {
+            System.out.println("\tNoted. I've removed this task: ");
+            printTaskAndTotal(task);
+        }
     }
 
-    private static void addToTaskList(Task task) {
+    private static void addToTaskList(Task task, boolean print) {
         tasks.add(task);
-        System.out.println("\tGot it. I've added this task:");
-        printTaskAndTotal(task);
+        if (print) {
+            System.out.println("\tGot it. I've added this task:");
+            printTaskAndTotal(task);
+        }
     }
 
     private static void printTaskAndTotal(Task task) {
         System.out.println("\t\t" + task.toString());
         int total = tasks.size();
-        if(total == 1) {
+        if (total == 1) {
             System.out.println("\tNow you only have 1 task in the list!");
         } else {
             System.out.println("\tNow you have " + total + " tasks in the list.");
