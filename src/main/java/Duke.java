@@ -70,7 +70,7 @@ public class Duke {
     private static void handleInput(String input) {
         System.out.println(DOTTED_LINE);
         try {
-            if (input.equalsIgnoreCase(LIST_COMMAND)) {
+            if (input.trim().equalsIgnoreCase(LIST_COMMAND)) {
                 executeCommand(input, LIST_COMMAND);
             } else if (input.startsWith(DONE_COMMAND)) {
                 executeCommand(input, DONE_COMMAND);
@@ -83,22 +83,32 @@ public class Duke {
             } else {
                 System.out.println("\t☹ OOPS!!! I'm sorry, but I don't know what that means :(");
             }
+        } catch (InvalidIndexException e) {
+            System.out.println("\t☹ OOPS!!! I can't find this task");
         } catch (EmptyNameException e) {
             System.out.println("\t☹ OOPS!!! The description of a todo cannot be empty.");
         }
         System.out.println(DOTTED_LINE);
     }
 
-    private static void executeCommand(String input, String command) throws EmptyNameException {
+    private static void executeCommand(String input, String command)
+            throws InvalidIndexException, EmptyNameException {
         switch (command) {
         case LIST_COMMAND: {
             printList();
             break;
         }
         case DONE_COMMAND: {
-            int index = Integer.parseInt(input.substring(command.length()).trim());
-            Task task = tasks[index - 1];
-            markTaskAsDone(task);
+            try {
+                int index = Integer.parseInt(input.substring(command.length()).trim());
+                if (index < 1 || index > numOfTasks) {
+                    throw new InvalidIndexException();
+                }
+                Task task = tasks[index - 1];
+                markTaskAsDone(task);
+            } catch (NumberFormatException e) {
+                System.out.println("\tPlease enter the task number too!");
+            }
             break;
         }
         case TODO_COMMAND: {
@@ -112,6 +122,10 @@ public class Duke {
         }
         case DEADLINE_COMMAND: {
             int byIndex = input.indexOf(BY_COMMAND);
+            if (byIndex == -1) {
+                System.out.println("Please tell me when this is due!");
+                return;
+            }
             String name = input.substring(DEADLINE_COMMAND.length(), byIndex).trim();
             String by = input.substring(byIndex + BY_COMMAND.length()).trim();
             Task deadline = new Deadline(name, by);
@@ -120,6 +134,10 @@ public class Duke {
         }
         case EVENT_COMMAND: {
             int atIndex = input.indexOf(AT_COMMAND);
+            if (atIndex == -1) {
+                System.out.println("Please tell me when is this event!");
+                return;
+            }
             String name = input.substring(EVENT_COMMAND.length(), atIndex).trim();
             String at = input.substring(atIndex + AT_COMMAND.length()).trim();
             Task event = new Event(name, at);
@@ -127,8 +145,7 @@ public class Duke {
             break;
         }
         default: {
-            Task task = new Task(input);
-            addToTaskList(task);
+            System.out.println("Something went wrong here...");
             break;
         }
         }
