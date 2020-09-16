@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Duke {
@@ -8,18 +9,17 @@ public class Duke {
             + "|____/ \\__,_|_|\\_\\___|\n";
     private static final String DOTTED_LINE =
             "\t----------------------------------------------------------";
-    private static final int MAX_TASKS = 100;
-    private static final String EXIT_COMMAND = "bye";
-    private static final String LIST_COMMAND = "list";
-    private static final String DONE_COMMAND = "done";
     private static final String TODO_COMMAND = "todo";
     private static final String DEADLINE_COMMAND = "deadline";
     private static final String EVENT_COMMAND = "event";
     private static final String BY_COMMAND = "/by";
     private static final String AT_COMMAND = "/at";
+    private static final String LIST_COMMAND = "list";
+    private static final String DONE_COMMAND = "done";
+    private static final String DELETE_COMMAND = "delete";
+    private static final String EXIT_COMMAND = "bye";
 
-    private static final Task[] tasks = new Task[MAX_TASKS];
-    private static int numOfTasks = 0;
+    private static final ArrayList<Task> tasks = new ArrayList<>();
 
     public static void main(String[] args) {
         printWelcomeMessage();
@@ -45,6 +45,8 @@ public class Duke {
                     executeCommand(input, LIST_COMMAND);
                 } else if (input.startsWith(DONE_COMMAND)) {
                     executeCommand(input, DONE_COMMAND);
+                } else if (input.startsWith(DELETE_COMMAND)) {
+                    executeCommand(input, DELETE_COMMAND);
                 } else if (input.startsWith(TODO_COMMAND)) {
                     executeCommand(input, TODO_COMMAND);
                 } else if (input.startsWith(DEADLINE_COMMAND)) {
@@ -69,9 +71,13 @@ public class Duke {
             break;
         }
         case DONE_COMMAND: {
-            int index = Integer.parseInt(input.substring(command.length()).trim());
-            Task task = tasks[index - 1];
-            markTaskAsDone(task);
+            int index = getIndexFromInput(input, command);
+            markTaskAsDone(index);
+            break;
+        }
+        case DELETE_COMMAND: {
+            int index = getIndexFromInput(input, command);
+            removeTask(index);
             break;
         }
         case TODO_COMMAND: {
@@ -109,24 +115,45 @@ public class Duke {
 
     private static void printList() {
         System.out.println("\tHere are the tasks in your list:");
+        int numOfTasks = tasks.size();
         for (int i = 0; i < numOfTasks; i++) {
-            Task task = tasks[i];
+            Task task = tasks.get(i);
             System.out.println("\t" + (i + 1) + ". " + task.toString());
         }
     }
 
-    private static void markTaskAsDone(Task task) {
+    private static int getIndexFromInput(String input, String command) {
+        return Integer.parseInt(input.substring(command.length()).trim()) - 1;
+    }
+
+    private static void markTaskAsDone(int index) {
+        Task task = tasks.get(index);
         task.markAsDone();
         System.out.println("\tNice! I've marked this task as done: ");
         System.out.println("\t" + task.toString());
     }
 
+    private static void removeTask(int index) {
+        Task task = tasks.get(index);
+        tasks.remove(index);
+        System.out.println("\tNoted. I've removed this task: ");
+        printTaskAndTotal(task);
+    }
+
     private static void addToTaskList(Task task) {
-        tasks[numOfTasks] = task;
-        numOfTasks++;
+        tasks.add(task);
         System.out.println("\tGot it. I've added this task:");
+        printTaskAndTotal(task);
+    }
+
+    private static void printTaskAndTotal(Task task) {
         System.out.println("\t\t" + task.toString());
-        System.out.println("\tNow you have " + numOfTasks + " tasks in the list.");
+        int total = tasks.size();
+        if(total == 1) {
+            System.out.println("\tNow you only have 1 task in the list!");
+        } else {
+            System.out.println("\tNow you have " + total + " tasks in the list.");
+        }
     }
 
     private static void printEndMessage() {
