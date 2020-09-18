@@ -84,6 +84,8 @@ public class Duke {
                 executeCommand(input, LIST_COMMAND, finishSetup);
             } else if (input.startsWith(DONE_COMMAND)) {
                 executeCommand(input, DONE_COMMAND, finishSetup);
+            } else if (input.startsWith(DELETE_COMMAND)) {
+                executeCommand(input, DELETE_COMMAND, finishSetup);
             } else if (input.startsWith(TODO_COMMAND)) {
                 executeCommand(input, TODO_COMMAND, finishSetup);
             } else if (input.startsWith(DEADLINE_COMMAND)) {
