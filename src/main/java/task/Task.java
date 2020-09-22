@@ -1,6 +1,9 @@
 package task;
 
 public class Task {
+    private final String TICK_ICON = "\u2713";
+    private final String CROSS_ICON = "\u2718";
+
     protected String name;
     protected boolean isDone;
 
@@ -14,8 +17,7 @@ public class Task {
     }
 
     protected String getStatusIcon() {
-        //return tick or X symbols
-        return (isDone ? "\u2713" : "\u2718");
+        return (isDone ? TICK_ICON : CROSS_ICON);
     }
 
     @Override
