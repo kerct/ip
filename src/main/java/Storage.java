@@ -19,11 +19,8 @@ public class Storage {
         }
     }
 
-    public void load(Parser parser) throws FileNotFoundException {
-        Scanner reader = new Scanner(file);
-        while (reader.hasNext()) {
-            parser.handleInput(reader.nextLine(), false);
-        }
+    public Scanner getReader() throws FileNotFoundException {
+        return new Scanner(file);
     }
 
     public void appendToFile(String input) throws IOException {

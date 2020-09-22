@@ -1,35 +1,153 @@
+import exception.EmptyNameException;
+import exception.InvalidIndexException;
+import task.Deadline;
+import task.Event;
+import task.Task;
+import task.Todo;
+
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Scanner;
 
 public class Duke {
-    private final String EXIT_COMMAND = "bye";
-
     private Ui ui;
+    private Storage storage;
+    private TaskList tasks;
     private Parser parser;
 
     public Duke(String filePath) {
         ui = new Ui();
-        Storage storage = new Storage(filePath);
-        TaskList tasks = new TaskList();
-        parser = new Parser(storage, tasks, ui);
+        storage = new Storage(filePath);
+        tasks = new TaskList();
+        parser = new Parser();
         try {
-            storage.load(parser);
+            Scanner reader = storage.getReader();
+            while (reader.hasNext()) {
+                String input = reader.nextLine();
+                Command command = parser.identifyCommand(input);
+                handleCommand(input, command, false);
+            }
         } catch (FileNotFoundException e) {
             ui.printErrorMessage(e.getMessage());
         }
     }
 
     public void run() {
+        ui.printWelcomeMessage();
         Scanner scanner = new Scanner(System.in);
         String input = scanner.nextLine();
-        while (!input.trim().equalsIgnoreCase(EXIT_COMMAND)) {
-            parser.handleInput(input, true);
+        Command command = parser.identifyCommand(input);
+        do {
+            handleCommand(input, command, true);
             input = scanner.nextLine();
-        }
+            command = parser.identifyCommand(input);
+        } while (command != Command.EXIT);
         ui.printEndMessage();
     }
 
     public static void main(String[] args) {
         new Duke("data/duke.txt").run();
+    }
+
+    private void handleCommand(String input, Command command, boolean toPrint) {
+        try {
+            if (toPrint) {
+                ui.printDottedLine();
+            }
+            executeCommand(input, command, toPrint);
+        } catch (NumberFormatException e) {
+            System.out.println("\tPlease enter the task number too!");
+        } catch (InvalidIndexException e) {
+            System.out.println("\t☹ OOPS!!! I can't find this task");
+        } catch (EmptyNameException e) {
+            System.out.println("\t☹ OOPS!!! The description of a todo cannot be empty.");
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (toPrint) {
+                ui.printDottedLine();
+            }
+        }
+    }
+
+    private void executeCommand(String input, Command command, boolean toPrint)
+            throws InvalidIndexException, EmptyNameException, IOException {
+        switch (command) {
+        case LIST: {
+            tasks.printList();
+            break;
+        }
+        case DONE: {
+            int index = parser.getIndexFromInput(input, command.getKeyword(), tasks.getTotal());
+            Task task = tasks.markTaskAsDone(index);
+            if (toPrint) {
+                ui.printTaskMarkedAsDone(task);
+                storage.appendToFile(input);
+            }
+            break;
+        }
+        case DELETE: {
+            int index = parser.getIndexFromInput(input, command.getKeyword(), tasks.getTotal());
+            Task task = tasks.removeTask(index);
+            if (toPrint) {
+                ui.printTaskRemoved(task, tasks.getTotal());
+                storage.appendToFile(input);
+            }
+            break;
+        }
+        case TODO: {
+            String name = input.substring(command.getKeyword().length()).trim();
+            if (name.length() == 0) {
+                throw new EmptyNameException();
+            }
+            Task todo = new Todo(name);
+            tasks.addToTaskList(todo);
+            if (toPrint) {
+                ui.printTaskAdded(todo, tasks.getTotal());
+                storage.appendToFile(input);
+            }
+            break;
+        }
+        case DEADLINE: {
+            int byIndex = input.indexOf(Command.BY.getKeyword());
+            if (byIndex == -1) {
+                System.out.println("Please tell me when this is due!");
+                return;
+            }
+            String name = input.substring(command.getKeyword().length(), byIndex).trim();
+            String by = input.substring(byIndex + Command.BY.getKeyword().length()).trim();
+            Task deadline = new Deadline(name, by);
+            tasks.addToTaskList(deadline);
+            if (toPrint) {
+                ui.printTaskAdded(deadline, tasks.getTotal());
+                storage.appendToFile(input);
+            }
+            break;
+        }
+        case EVENT: {
+            int atIndex = input.indexOf(Command.AT.getKeyword());
+            if (atIndex == -1) {
+                System.out.println("Please tell me when is this event!");
+                return;
+            }
+            String name = input.substring(command.getKeyword().length(), atIndex).trim();
+            String at = input.substring(atIndex + Command.AT.getKeyword().length()).trim();
+            Task event = new Event(name, at);
+            tasks.addToTaskList(event);
+            if (toPrint) {
+                ui.printTaskAdded(event, tasks.getTotal());
+                storage.appendToFile(input);
+            }
+            break;
+        }
+        case INVALID: {
+            System.out.println("\t☹ OOPS!!! I'm sorry, but I don't know what that means :(");
+            break;
+        }
+        default: {
+            System.out.println("Something went wrong here...");
+            break;
+        }
+        }
     }
 }
