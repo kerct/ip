@@ -74,7 +74,7 @@ public class Duke {
             throws InvalidIndexException, EmptyNameException, IOException {
         switch (command) {
         case LIST: {
-            tasks.printList();
+            ui.printTaskList(tasks);
             break;
         }
         case DONE: {
@@ -138,6 +138,16 @@ public class Duke {
                 ui.printTaskAdded(event, tasks.getTotal());
                 storage.appendToFile(input);
             }
+            break;
+        }
+        case FIND: {
+            String searchTerm = input.substring(command.getKeyword().length()).trim();
+            if (searchTerm.length() == 0) {
+                System.out.println("What do you want to find?");
+                return;
+            }
+            TaskList matchingTasks = tasks.findTasks(searchTerm);
+            ui.printMatchingTasks(matchingTasks);
             break;
         }
         case INVALID: {
