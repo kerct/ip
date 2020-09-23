@@ -1,7 +1,6 @@
 import exception.EmptyNameException;
 import exception.InvalidIndexException;
-import task.Deadline;
-import task.Event;
+import exception.MissingArgumentException;
 import task.Task;
 import task.Todo;
 
@@ -40,7 +39,7 @@ public class Duke {
     /**
      * Starts the Duke program where users will be prompted for inputs.
      */
-    public void run() {
+    private void run() {
         ui.printWelcomeMessage();
         Scanner scanner = new Scanner(System.in);
         String input = scanner.nextLine();
@@ -67,8 +66,6 @@ public class Duke {
             System.out.println("\tPlease enter the task number too!");
         } catch (InvalidIndexException e) {
             System.out.println("\t☹ OOPS!!! I can't find this task");
-        } catch (EmptyNameException e) {
-            System.out.println("\t☹ OOPS!!! The description of a todo cannot be empty.");
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -79,14 +76,13 @@ public class Duke {
     }
 
     private void executeCommand(String input, Command command, boolean toPrint)
-            throws InvalidIndexException, EmptyNameException, IOException {
+            throws InvalidIndexException, IOException {
         switch (command) {
-        case LIST: {
+        case LIST:
             ui.printTaskList(tasks);
             break;
-        }
         case DONE: {
-            int index = parser.getIndexFromInput(input, command.getKeyword(), tasks.getTotal());
+            int index = parser.getIndexFromInput(input, command, tasks.getTotal());
             Task task = tasks.markTaskAsDone(index);
             if (toPrint) {
                 ui.printTaskMarkedAsDone(task);
@@ -95,7 +91,7 @@ public class Duke {
             break;
         }
         case DELETE: {
-            int index = parser.getIndexFromInput(input, command.getKeyword(), tasks.getTotal());
+            int index = parser.getIndexFromInput(input, command, tasks.getTotal());
             Task task = tasks.removeTask(index);
             if (toPrint) {
                 ui.printTaskRemoved(task, tasks.getTotal());
@@ -103,69 +99,58 @@ public class Duke {
             }
             break;
         }
-        case TODO: {
-            String name = input.substring(command.getKeyword().length()).trim();
-            if (name.length() == 0) {
-                throw new EmptyNameException();
-            }
-            Task todo = new Todo(name);
-            tasks.addToTaskList(todo);
-            if (toPrint) {
-                ui.printTaskAdded(todo, tasks.getTotal());
-                storage.appendToFile(input);
-            }
-            break;
-        }
-        case DEADLINE: {
-            int byIndex = input.indexOf(Command.BY.getKeyword());
-            if (byIndex == -1) {
-                System.out.println("Please tell me when this is due!");
-                return;
-            }
-            String name = input.substring(command.getKeyword().length(), byIndex).trim();
-            String by = input.substring(byIndex + Command.BY.getKeyword().length()).trim();
-            Task deadline = new Deadline(name, by);
-            tasks.addToTaskList(deadline);
-            if (toPrint) {
-                ui.printTaskAdded(deadline, tasks.getTotal());
-                storage.appendToFile(input);
+        case TODO:
+            try {
+                String name = parser.getNameFromInput(input, command);
+                Task todo = new Todo(name);
+                tasks.addToTaskList(todo);
+                if (toPrint) {
+                    ui.printTaskAdded(todo, tasks.getTotal());
+                    storage.appendToFile(input);
+                }
+            } catch (EmptyNameException e) {
+                System.out.println("\t☹ OOPS!!! The description of a todo cannot be empty.");
             }
             break;
-        }
-        case EVENT: {
-            int atIndex = input.indexOf(Command.AT.getKeyword());
-            if (atIndex == -1) {
-                System.out.println("Please tell me when is this event!");
-                return;
-            }
-            String name = input.substring(command.getKeyword().length(), atIndex).trim();
-            String at = input.substring(atIndex + Command.AT.getKeyword().length()).trim();
-            Task event = new Event(name, at);
-            tasks.addToTaskList(event);
-            if (toPrint) {
-                ui.printTaskAdded(event, tasks.getTotal());
-                storage.appendToFile(input);
+        case DEADLINE:
+            try {
+                Task deadline = parser.getDeadlineFromInput(input);
+                tasks.addToTaskList(deadline);
+                if (toPrint) {
+                    ui.printTaskAdded(deadline, tasks.getTotal());
+                    storage.appendToFile(input);
+                }
+            } catch (MissingArgumentException e) {
+                System.out.println("\tPlease tell me when this is due!");
             }
             break;
-        }
-        case FIND: {
-            String searchTerm = input.substring(command.getKeyword().length()).trim();
-            if (searchTerm.length() == 0) {
-                System.out.println("What do you want to find?");
-                return;
+        case EVENT:
+            try {
+                Task event = parser.getEventFromInput(input);
+                tasks.addToTaskList(event);
+                if (toPrint) {
+                    ui.printTaskAdded(event, tasks.getTotal());
+                    storage.appendToFile(input);
+                }
+            } catch (MissingArgumentException e) {
+                System.out.println("\tPlease tell me when is this event!");
             }
-            TaskList matchingTasks = tasks.findTasks(searchTerm);
-            ui.printMatchingTasks(matchingTasks);
             break;
-        }
-        case INVALID: {
+        case FIND:
+            try {
+                String searchTerm = parser.getNameFromInput(input, command);
+                TaskList matchingTasks = tasks.findTasks(searchTerm);
+                ui.printMatchingTasks(matchingTasks);
+            } catch (EmptyNameException e) {
+                System.out.println("\tWhat do you want to find?");
+            }
+            break;
+        case INVALID:
             System.out.println("\t☹ OOPS!!! I'm sorry, but I don't know what that means :(");
             break;
-        }
-        default: {
-            System.out.println("Something went wrong here...");
+        default:
+            System.out.println("\tSomething went wrong here...");
             break;
-        }
         }
     }
 }
