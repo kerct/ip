@@ -1,3 +1,6 @@
+/**
+ * Represents the different commands recognised.
+ */
 public enum Command {
     TODO("todo"), DEADLINE("deadline"), EVENT("event"),
     LIST("list"), DONE("done"), DELETE("delete"),
@@ -7,7 +10,7 @@ public enum Command {
 
     private final String KEYWORD;
 
-    private Command(String keyword) {
+    Command(String keyword) {
         KEYWORD = keyword;
     }
 

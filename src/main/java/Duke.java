@@ -15,6 +15,11 @@ public class Duke {
     private TaskList tasks;
     private Parser parser;
 
+    /**
+     * Creates a Duke instance with data loaded from and stored at the specified file path.
+     *
+     * @param filePath File path where data will be loaded from and stored.
+     */
     public Duke(String filePath) {
         ui = new Ui();
         storage = new Storage(filePath);
@@ -32,16 +37,19 @@ public class Duke {
         }
     }
 
+    /**
+     * Starts the Duke program where users will be prompted for inputs.
+     */
     public void run() {
         ui.printWelcomeMessage();
         Scanner scanner = new Scanner(System.in);
         String input = scanner.nextLine();
         Command command = parser.identifyCommand(input);
-        do {
+        while (command != Command.EXIT) {
             handleCommand(input, command, true);
             input = scanner.nextLine();
             command = parser.identifyCommand(input);
-        } while (command != Command.EXIT);
+        }
         ui.printEndMessage();
     }
 
