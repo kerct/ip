@@ -20,6 +20,10 @@ public class Task {
         return (isDone ? TICK_ICON : CROSS_ICON);
     }
 
+    public String getName() {
+        return name;
+    }
+
     @Override
     public String toString() {
         return "[" + getStatusIcon() + "] " + name;
