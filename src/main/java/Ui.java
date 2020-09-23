@@ -99,6 +99,11 @@ public class Ui {
         }
     }
 
+    /**
+     * Prints out the tasks in the list, if any.
+     *
+     * @param tasks List of tasks.
+     */
     public void printTaskList(TaskList tasks) {
         if (tasks.getTotal() == 0) {
             System.out.println("\tThere are no tasks in your list!");
@@ -108,6 +113,11 @@ public class Ui {
         }
     }
 
+    /**
+     * Prints out the matched tasks, if any.
+     *
+     * @param tasks List of matched tasks.
+     */
     public void printMatchingTasks(TaskList tasks) {
         if (tasks.getTotal() == 0) {
             System.out.println("\tNo tasks found!");
