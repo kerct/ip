@@ -46,4 +46,13 @@ public class Task {
     public String toString() {
         return "[" + getStatusIcon() + "] " + name;
     }
+
+    /**
+     * Returns the name of the task.
+     *
+     * @return Name of the task.
+     */
+    public String getName() {
+        return name;
+    }
 }

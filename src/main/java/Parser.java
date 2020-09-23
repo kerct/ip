@@ -23,6 +23,8 @@ public class Parser {
             return Command.DEADLINE;
         } else if (input.startsWith(Command.EVENT.getKeyword())) {
             return Command.EVENT;
+        } else if (input.startsWith(Command.FIND.getKeyword())) {
+            return Command.FIND;
         } else if (input.trim().equalsIgnoreCase(Command.EXIT.getKeyword())) {
             return Command.EXIT;
         } else {

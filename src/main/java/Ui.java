@@ -98,4 +98,22 @@ public class Ui {
             System.out.println("\tNow you have " + numOfTasks + " tasks in the list.");
         }
     }
+
+    public void printTaskList(TaskList tasks) {
+        if (tasks.getTotal() == 0) {
+            System.out.println("\tThere are no tasks in your list!");
+        }
+        else {
+            tasks.printList("Here are the tasks in your list:");
+        }
+    }
+
+    public void printMatchingTasks(TaskList tasks) {
+        if (tasks.getTotal() == 0) {
+            System.out.println("\tNo tasks found!");
+        }
+        else {
+            tasks.printList("Here are the matching tasks in your list:");
+        }
+    }
 }

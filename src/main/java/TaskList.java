@@ -9,10 +9,12 @@ public class TaskList {
     private ArrayList<Task> tasks = new ArrayList<>();
 
     /**
-     * Prints out all the tasks in the current list.
+     * Prints out the given message followed by all the tasks in the current list.
+     *
+     * @param message Message to be printed before listing the tasks.
      */
-    public void printList() {
-        System.out.println("\tHere are the tasks in your list:");
+    public void printList(String message) {
+        System.out.println("\t" + message);
         int numOfTasks = tasks.size();
         for (int i = 0; i < numOfTasks; i++) {
             Task task = tasks.get(i);
@@ -60,5 +62,15 @@ public class TaskList {
      */
     public void addToTaskList(Task task) {
         tasks.add(task);
+    }
+
+    public TaskList findTasks(String searchTerm) {
+        TaskList matchingTasks = new TaskList();
+        tasks.forEach(task -> {
+            if (task.getName().contains(searchTerm)) {
+                matchingTasks.addToTaskList(task);
+            }
+        });
+        return matchingTasks;
     }
 }
